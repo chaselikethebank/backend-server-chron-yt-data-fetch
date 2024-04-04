@@ -87,7 +87,7 @@ mongoose
       
 
     // Define the schedule for the job
-    schedule.scheduleJob("* * * * *", async () => {
+    schedule.scheduleJob('0 13 * * 2', async () => {
       // Run every minute
       console.log("Running scheduled job to fetch YouTube playlist data...");
       await fetchAndSavePlaylistData();
