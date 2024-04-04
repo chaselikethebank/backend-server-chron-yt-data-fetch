@@ -36,7 +36,7 @@ mongoose
             {
               params: {
                 part: "snippet",
-                maxResults: 13,
+                maxResults: 15,
                 playlistId: PLAYLIST_ID,
                 key: YOUTUBE_API_KEY,
               },
