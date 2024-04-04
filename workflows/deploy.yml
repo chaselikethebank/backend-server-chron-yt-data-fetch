@@ -26,7 +26,15 @@ jobs:
         username: ${{ secrets.DROPLET_USERNAME }}
         key: ${{ secrets.SSH_PRIVATE_KEY }}
         script: |
+          # Create the app directory if it doesn't exist
+          mkdir -p /home/chron-yt-backend
           cd /home/chron-yt-backend
+          
+          # Pull the latest code
           git pull origin main
+          
+          # Install dependencies
           npm install --production
-          pm2 restart app
+          
+          # Start the app with PM2
+          pm2 start app.js --name chron-yt-backend
