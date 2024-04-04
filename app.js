@@ -86,7 +86,11 @@ mongoose
       }
       
 
-    // Define the schedule for the job
+    // Define the schedule for the job 
+    // tuesday after lunch '0 13 * * 2'
+    // For every day after lunch: '30 13 * * *'
+    // For every hour: '0 * * * *'
+
     schedule.scheduleJob('0 13 * * 2', async () => {
       // Run every minute
       console.log("Running scheduled job to fetch YouTube playlist data...");
@@ -108,6 +112,7 @@ mongoose
 app.get("/playlist", async (req, res) => {
   try {
     const playlistData = await PlaylistItem.find();
+    res.setHeader('Access-Control-Allow-Origin', 'http://127.0.0.1:5500');
     res.json(playlistData);
     console.log(`${port} /playlist is being hit`);
   } catch (error) {
