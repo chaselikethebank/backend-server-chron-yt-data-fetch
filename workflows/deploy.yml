@@ -33,6 +33,9 @@ jobs:
              # Copy the app files to the directory
             cp -r . /home/chron-yt-backend
 
+            # Copy the app files to the directory
+            scp -r . ubuntu@${{ secrets.DROPLET_HOST }}:/home/chron-yt-backend
+
             # Pull the latest code
             git pull origin main
 
