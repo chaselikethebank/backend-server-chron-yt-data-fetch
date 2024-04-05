@@ -5,6 +5,8 @@ const cors = require("cors");
 require("dotenv").config();
 const PlaylistItem = require("./models/PlaylistItem");
 const schedule = require("node-schedule");
+const rateLimit = require("express-rate-limit");
+
 
 const app = express();
 const port = process.env.PORT || 8000;
@@ -29,69 +31,71 @@ mongoose
 
     // Define a function to fetch data from YouTube API and save to MongoDB
     async function fetchAndSavePlaylistData() {
-        try {
-          // Fetch data from YouTube API
-          const response = await axios.get(
-            `https://www.googleapis.com/youtube/v3/playlistItems`,
-            {
-              params: {
-                part: "snippet",
-                maxResults: 15,
-                playlistId: PLAYLIST_ID,
-                key: YOUTUBE_API_KEY,
-              },
-            }
-          );
-      
-          // Extract relevant data from the API response
-          const fetchedItems = response.data.items.map((item) => ({
-            title: item.snippet.title,
-            videoId: item.snippet.resourceId.videoId,
-            publishedAt: item.snippet.publishedAt,
-            description: item.snippet.description,
-            thumbnails: item.snippet.thumbnails,
-            channelTitle: item.snippet.channelTitle,
-            playlistId: item.snippet.playlistId,
-            position: item.snippet.position,
-            videoOwnerChannelTitle: item.snippet.videoOwnerChannelTitle,
-            videoOwnerChannelId: item.snippet.videoOwnerChannelId,
-          }));
-      
-          // Retrieve existing items from MongoDB
-          const existingItems = await PlaylistItem.find({}, { _id: 0, videoId: 1 });
-          const existingVideoIds = existingItems.map((item) => item.videoId);
-      
-          // Filter out new items
-          const newItems = fetchedItems.filter(
-            (item) => !existingVideoIds.includes(item.videoId)
-          );
-      
-          // Insert new items to MongoDB
-          if (newItems.length > 0) {
-            await PlaylistItem.insertMany(newItems);
-            const currentTime = new Date();
-            const formattedTime = currentTime.toLocaleString();
-            console.log(
-              `New items inserted into MongoDB successfully at: ${formattedTime}`
-            );
-          } else {
-            console.log("No new items to insert into MongoDB");
+      try {
+        // Fetch data from YouTube API
+        const response = await axios.get(
+          `https://www.googleapis.com/youtube/v3/playlistItems`,
+          {
+            params: {
+              part: "snippet",
+              maxResults: 15,
+              playlistId: PLAYLIST_ID,
+              key: YOUTUBE_API_KEY,
+            },
           }
-        } catch (error) {
-          console.error(
-            "Error fetching and saving playlist videos:",
-            error.response ? error.response.data : error.message
-          );
-        }
-      }
-      
+        );
 
-    // Define the schedule for the job 
+        // Extract relevant data from the API response
+        const fetchedItems = response.data.items.map((item) => ({
+          title: item.snippet.title,
+          videoId: item.snippet.resourceId.videoId,
+          publishedAt: item.snippet.publishedAt,
+          description: item.snippet.description,
+          thumbnails: item.snippet.thumbnails,
+          channelTitle: item.snippet.channelTitle,
+          playlistId: item.snippet.playlistId,
+          position: item.snippet.position,
+          videoOwnerChannelTitle: item.snippet.videoOwnerChannelTitle,
+          videoOwnerChannelId: item.snippet.videoOwnerChannelId,
+        }));
+
+        // Retrieve existing items from MongoDB
+        const existingItems = await PlaylistItem.find(
+          {},
+          { _id: 0, videoId: 1 }
+        );
+        const existingVideoIds = existingItems.map((item) => item.videoId);
+
+        // Filter out new items
+        const newItems = fetchedItems.filter(
+          (item) => !existingVideoIds.includes(item.videoId)
+        );
+
+        // Insert new items to MongoDB
+        if (newItems.length > 0) {
+          await PlaylistItem.insertMany(newItems);
+          const currentTime = new Date();
+          const formattedTime = currentTime.toLocaleString();
+          console.log(
+            `New items inserted into MongoDB successfully at: ${formattedTime}`
+          );
+        } else {
+          console.log("No new items to insert into MongoDB");
+        }
+      } catch (error) {
+        console.error(
+          "Error fetching and saving playlist videos:",
+          error.response ? error.response.data : error.message
+        );
+      }
+    }
+
+    // Define the schedule for the job
     // tuesday after lunch '0 13 * * 2'
     // For every day after lunch: '30 13 * * *'
     // For every hour: '0 * * * *'
 
-    schedule.scheduleJob('0 13 * * 2', async () => {
+    schedule.scheduleJob("0 13 * * 2", async () => {
       // Run every minute
       console.log("Running scheduled job to fetch YouTube playlist data...");
       await fetchAndSavePlaylistData();
@@ -108,11 +112,18 @@ mongoose
     console.error("Error connecting to MongoDB:", err);
   });
 
+// Define rate limiter options
+const limiter = rateLimit({
+  windowMs: 60 * 1000, // 1 minute
+  max: 100, // 100 requests per minute
+  message: "Too many requests from this IP, please try again later.",
+});
+
 // API Endpoint for fetching playlist data from MongoDB
 app.get("/playlist", async (req, res) => {
   try {
     const playlistData = await PlaylistItem.find();
-    res.setHeader('Access-Control-Allow-Origin', 'http://127.0.0.1:5500');
+    res.setHeader("Access-Control-Allow-Origin", "*");
     res.json(playlistData);
     console.log(`${port} /playlist is being hit`);
   } catch (error) {
