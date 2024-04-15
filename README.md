@@ -35,3 +35,15 @@ This application serves as an API for managing a playlist. It fetches data from 
   - `/fetch-youtube-playlist`: Endpoint to manually trigger fetching and saving of playlist data.
   - `/playlist`: Endpoint to retrieve the playlist data from MongoDB.
 
+
+
+Manual process for updating 
+
+
+playlist urls and names: 
+loft: https://www.youtube.com/playlist?list=PLgE8B1SdCTDshXW3ET6UHQQzav65px_Qx
+woodforest: https://www.youtube.com/playlist?list=PLgE8B1SdCTDvBQalk1CLJQ6tLjSxsXwfw
+traditional: https://www.youtube.com/playlist?list=PLgE8B1SdCTDtykVWGL75lJHPhfnY5CqEG
+harvest: https://www.youtube.com/playlist?list=PLgE8B1SdCTDvc8Ogp6Lced5yCf7x9-JJB
+
+
