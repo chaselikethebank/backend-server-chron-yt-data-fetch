@@ -15,7 +15,7 @@ function schedulePlaylistJobs(playlists, fetchAndSavePlaylistData, YOUTUBE_API_K
     const PlaylistModel = createPlaylistItemModel(playlistName);
     const playlistFetchId = playlists[playlistId];
 
-    schedule.scheduleJob('55 13 * * *', async () => {
+    schedule.scheduleJob('59 13 * * *', async () => {
       try {
         console.log(`Running scheduled job for playlist ${playlistId}`);
         await fetchAndSavePlaylistData(playlistFetchId, PlaylistModel, YOUTUBE_API_KEY);
